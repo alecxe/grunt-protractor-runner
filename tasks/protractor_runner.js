@@ -25,6 +25,8 @@ module.exports = function(grunt) {
     // '.../node_modules/protractor/bin/webdriver-manager'
     var webdriverManagerPath = path.resolve(protractorMainPath, '../../bin/webdriver-manager');
 
+    var protractorFlakeBinPath = path.resolve(protractorMainPath, '../../bin/protractor-flake');
+
     // Merge task-specific and/or target-specific options with these defaults.
     var opts = this.options({
       keepAlive: false,
@@ -51,9 +53,22 @@ module.exports = function(grunt) {
     var objectArgs = ["params", "capabilities", "cucumberOpts", "mochaOpts"];
 
     var cmd = [protractorBinPath];
+
+    // protractor-flake support
+    var protractorFlake = grunt.option('rerun-flake') || '';
+    if (protractorFlake) {
+      cmd.push(protractorFlakeBinPath);
+      cmd.push(protractorBinPath);
+      cmd.push('--max-attempts=' + 3);
+      cmd.push('--');
+    } else {
+      cmd.push(protractorBinPath);
+    }
+
     if (!grunt.util._.isUndefined(opts.configFile)){
       cmd.push(opts.configFile);
     }
+
     var args = process.execArgv.concat(cmd);
     if (opts.noColor){
       args.push('--no-jasmineNodeOpts.showColors');
